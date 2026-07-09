@@ -1,0 +1,15 @@
+# =============================================================================
+# Dependencias del entrenamiento (clasificador ViT de triatominos).
+#
+# El entrenamiento está pensado para ejecutarse en Google Colab, donde `torch`
+# ya viene preinstalado. Este archivo documenta las versiones para
+# reproducibilidad; en el notebook se instala con:
+#   pip install -U transformers datasets accelerate scikit-learn
+# =============================================================================
+
+transformers>=4.44
+datasets>=2.20
+accelerate>=0.33
+torch>=2.2
+scikit-learn>=1.3
+matplotlib>=3.7

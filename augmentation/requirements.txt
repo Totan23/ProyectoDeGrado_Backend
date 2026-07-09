@@ -1,0 +1,24 @@
+# =============================================================================
+# Dependencias del sistema de data augmentation de triatominos
+# -----------------------------------------------------------------------------
+# Recomendado: Python 3.11 o 3.12 (los wheels precompilados de opencv y
+# albumentations son estables ahí). En Python 3.14, muy reciente, puede que
+# pip tenga que compilar desde fuente.
+#
+#   python3.12 -m venv .venv
+#   source .venv/bin/activate
+#   pip install -r requirements.txt
+# =============================================================================
+
+# --- Data augmentation ---
+albumentations>=1.4.0
+opencv-python>=4.8.0
+pillow>=10.0.0
+numpy>=1.24.0
+
+# --- Subida a Hugging Face (gestiona Git LFS automáticamente) ---
+huggingface_hub>=0.24.0
+
+# --- Configuración y utilidades ---
+python-dotenv>=1.0.0
+tqdm>=4.66.0

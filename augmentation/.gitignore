@@ -1,0 +1,41 @@
+# =============================================================================
+# Secretos / entorno  (NUNCA versionar)
+# =============================================================================
+.env
+.venv/
+venv/
+env/
+ENV/
+
+# =============================================================================
+# Imágenes locales  (NUNCA versionar)
+# Las imágenes augmentadas van directo a Hugging Face desde memoria; no debería
+# existir ninguna en local, pero por seguridad ignoramos cualquier imagen.
+# =============================================================================
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.gif
+*.tif
+*.tiff
+*.webp
+
+# =============================================================================
+# Python
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.Python
+build/
+dist/
+
+# =============================================================================
+# Sistema operativo / editores
+# =============================================================================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
