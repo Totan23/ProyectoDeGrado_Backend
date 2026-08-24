@@ -39,9 +39,23 @@ modelo_*/
 *.parquet
 
 # =============================================================================
+# Documentación de tesis (material personal; no va al repo público)
+# =============================================================================
+documentacion_tesis.md
+**/documentacion_tesis.md
+
+# =============================================================================
 # Sistema operativo / editores
 # =============================================================================
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
+
+# =============================================================================
+# Material de tesis (redacción, resultados, figuras) — vive fuera del repo
+# =============================================================================
+training/figuras/
+**/REDACCION_*.md
+**/redaccion_*.md
+**/resultados_cnn.md
