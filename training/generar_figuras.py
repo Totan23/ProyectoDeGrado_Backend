@@ -26,30 +26,34 @@ AZUL = LinearSegmentedColormap.from_list("azul", ["#ffffff", "#1f4e79"])
 COMA = matplotlib.ticker.FuncFormatter(lambda v, _: f"{v:.2f}".replace(".", ","))
 
 
-def matriz_confusion(cm, archivo):
+def matriz_confusion(cm, archivo, etiquetas=GENEROS, eje="Género"):
     cm = np.array(cm)
     total = cm.sum()
+    n = len(etiquetas)
 
-    fig, ax = plt.subplots(figsize=(8.0, 6.6))
+    fig, ax = plt.subplots(figsize=(8.0, 6.6) if n == 3 else (9.4, 7.8))
     norm = cm / cm.sum(axis=1, keepdims=True)
     ax.imshow(norm, cmap=AZUL, vmin=0, vmax=1)
 
-    for i in range(3):
-        for j in range(3):
+    for i in range(n):
+        for j in range(n):
             ax.text(j, i, f"{cm[i, j]:,}".replace(",", "."),
-                    ha="center", va="center", fontsize=24,
+                    ha="center", va="center", fontsize=24 if n == 3 else 22,
                     color="white" if norm[i, j] > 0.5 else "#1a1a1a",
                     fontweight="bold" if i == j else "normal")
 
-    ax.set_xticks(range(3))
-    ax.set_yticks(range(3))
-    ax.set_xticklabels(GENEROS, style="italic", fontsize=17)
-    ax.set_yticklabels(GENEROS, style="italic", fontsize=17, rotation=90, va="center")
-    ax.set_xlabel("Género predicho", fontsize=19, labelpad=14)
-    ax.set_ylabel("Género real", fontsize=19, labelpad=14)
+    ax.set_xticks(range(n))
+    ax.set_yticks(range(n))
+    ax.set_xticklabels(etiquetas, fontsize=17)
+    ax.set_yticklabels(etiquetas, fontsize=17, rotation=90, va="center")
+    # Los géneros van en cursiva; "Otro" no es un nombre científico.
+    for t in ax.get_xticklabels() + ax.get_yticklabels():
+        t.set_style("normal" if t.get_text() == "Otro" else "italic")
+    ax.set_xlabel(f"{eje} predicho" if eje == "Género" else f"{eje} predicha", fontsize=19, labelpad=14)
+    ax.set_ylabel(f"{eje} real", fontsize=19, labelpad=14)
 
-    ax.set_xticks(np.arange(-0.5, 3, 1), minor=True)
-    ax.set_yticks(np.arange(-0.5, 3, 1), minor=True)
+    ax.set_xticks(np.arange(-0.5, n, 1), minor=True)
+    ax.set_yticks(np.arange(-0.5, n, 1), minor=True)
     ax.grid(which="minor", color="#9a9a9a", linewidth=1.0)
     ax.tick_params(which="minor", length=0)
     ax.tick_params(which="major", length=0, pad=10)
@@ -60,6 +64,46 @@ def matriz_confusion(cm, archivo):
     ax.text(0.5, -0.20, f"n = {total:,}".replace(",", ".") + f"   ·   exactitud = {exactitud}",
             transform=ax.transAxes, ha="center", fontsize=15, color="#404040")
 
+    fig.savefig(SALIDA / archivo, dpi=300, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    print("  ", archivo)
+
+
+def matrices_especie(paneles, archivo):
+    """Una matriz 2 × 2 por capa de especie (validación cruzada): otra especie vs. especie objetivo."""
+    fig, ejes = plt.subplots(1, len(paneles), figsize=(6.4 * len(paneles), 6.6))
+    for k, (ax, (especie, cm)) in enumerate(zip(ejes, paneles)):
+        cm = np.array(cm)
+        norm = cm / cm.sum(axis=1, keepdims=True)
+        ax.imshow(norm, cmap=AZUL, vmin=0, vmax=1)
+        for i in range(2):
+            for j in range(2):
+                ax.text(j, i, f"{cm[i, j]:,}".replace(",", "."), ha="center", va="center", fontsize=22,
+                        color="white" if norm[i, j] > 0.5 else "#1a1a1a",
+                        fontweight="bold" if i == j else "normal")
+        etiquetas = ["Otra especie", especie]
+        ax.set_xticks(range(2))
+        ax.set_yticks(range(2))
+        ax.set_xticklabels(etiquetas, fontsize=16)
+        ax.set_yticklabels(etiquetas, fontsize=16, rotation=90, va="center")
+        for t in ax.get_xticklabels() + ax.get_yticklabels():
+            t.set_style("normal" if t.get_text() == "Otra especie" else "italic")
+        ax.set_title(especie, fontsize=20, style="italic", pad=14)
+        ax.set_xlabel("Clase predicha", fontsize=17, labelpad=12)
+        if k == 0:
+            ax.set_ylabel("Clase real", fontsize=17, labelpad=12)
+        ax.set_xticks(np.arange(-0.5, 2, 1), minor=True)
+        ax.set_yticks(np.arange(-0.5, 2, 1), minor=True)
+        ax.grid(which="minor", color="#9a9a9a", linewidth=1.0)
+        ax.tick_params(which="minor", length=0)
+        ax.tick_params(which="major", length=0, pad=10)
+        for s in ax.spines.values():
+            s.set_edgecolor("#6a6a6a")
+        exh = f"{cm[1, 1] / cm[1].sum():.4f}".replace(".", ",")
+        esp = f"{cm[0, 0] / cm[0].sum():.4f}".replace(".", ",")
+        ax.text(0.5, -0.24, f"exhaustividad = {exh}   ·   especificidad = {esp}",
+                transform=ax.transAxes, ha="center", fontsize=14, color="#404040")
+    fig.tight_layout(w_pad=3)
     fig.savefig(SALIDA / archivo, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print("  ", archivo)
@@ -135,5 +179,31 @@ FASE2 = {
 
 curvas(FASE1, FASE2, "acc", "Exactitud", "FIGURA_1_curvas_exactitud.png", "lower right")
 curvas(FASE1, FASE2, "loss", "Pérdida", "FIGURA_2_curvas_perdida.png", "upper right")
+
+# Modelo final de cuatro clases (notebook "Clasificador de triatominos — MobileNetV3 FINAL4").
+CLASES = ["Panstrongylus", "Rhodnius", "Triatoma", "Otro"]
+matriz_confusion([[1699, 4, 46, 3], [2, 1544, 13, 1], [37, 18, 1885, 10], [4, 4, 20, 2142]],
+                 "FIGURA_8_matriz_modelo_final_4_clases.png", etiquetas=CLASES, eje="Clase")
+
+FASE1_4 = {
+    "tr_acc": [0.8390, 0.8851, 0.8899, 0.8909, 0.8925],
+    "va_acc": [0.9046, 0.9199, 0.9206, 0.9210, 0.9245],
+    "tr_loss": [0.4174, 0.3043, 0.2902, 0.2911, 0.2888],
+    "va_loss": [0.2636, 0.2292, 0.2261, 0.2251, 0.2145],
+}
+FASE2_4 = {
+    "tr_acc": [0.9266, 0.9560, 0.9673, 0.9750, 0.9792],
+    "va_acc": [0.9553, 0.9672, 0.9748, 0.9760, 0.9782],
+    "tr_loss": [0.1983, 0.1248, 0.0921, 0.0711, 0.0560],
+    "va_loss": [0.1283, 0.0946, 0.0757, 0.0700, 0.0580],
+}
+curvas(FASE1_4, FASE2_4, "acc", "Exactitud", "FIGURA_6_curvas_exactitud_4_clases.png", "lower right")
+curvas(FASE1_4, FASE2_4, "loss", "Pérdida", "FIGURA_7_curvas_perdida_4_clases.png", "upper right")
+
+# Capas de especie sobre el modelo final (notebook cabezales_especie, validación cruzada agrupada por ejemplar).
+matrices_especie([("P. geniculatus", [[1188, 130], [49, 1056]]),
+                  ("R. prolixus", [[1415, 119], [8, 72]]),
+                  ("T. maculata", [[4240, 463], [15, 259]])],
+                 "FIGURA_9_matrices_capas_especie.png")
 
 print(f"\nListo. {len(list(SALIDA.glob('*.png')))} figuras en: {SALIDA}")
